@@ -103,7 +103,7 @@ export default (app: express.Application) => {
     // Note: the way that we use the next_page_token here may not reflect the way the backend works.
     const response: ApiListJobsResponse = {
       jobs: [],
-      next_page_token: '',
+      next_page_token: undefined,
     };
 
     let jobs: ApiJob[] = fixedData.jobs;
@@ -140,7 +140,7 @@ export default (app: express.Application) => {
     // Note: the way that we use the next_page_token here may not reflect the way the backend works.
     const response: ApiListExperimentsResponse = {
       experiments: [],
-      next_page_token: '',
+      next_page_token: undefined,
     };
 
     let experiments: ApiExperiment[] = fixedData.experiments;
@@ -253,7 +253,7 @@ export default (app: express.Application) => {
     res.header('Content-Type', 'application/json');
     // Note: the way that we use the next_page_token here may not reflect the way the backend works.
     const response: ApiListRunsResponse = {
-      next_page_token: '',
+      next_page_token: undefined,
       runs: [],
     };
 
@@ -302,6 +302,20 @@ export default (app: express.Application) => {
     res.json(run);
   });
 
+  app.post(v1beta1Prefix + '/experiments', (req, res) => {
+    const experiment: ApiExperiment = req.body;
+    if (fixedData.experiments.find(e => e.name!.toLowerCase() === experiment.name!.toLowerCase())) {
+      res.status(404).send('An experiment with teh same name already exists');
+      return;
+    }
+    experiment.id = 'new-experiment-' + (fixedData.experiments.length + 1);
+    fixedData.experiments.push(experiment);
+
+    setTimeout(() => {
+      res.send(fixedData.experiments[fixedData.experiments.length - 1]);
+    }, 1000);
+  });
+
   app.post(v1beta1Prefix + '/runs', (req, res) => {
     const date = new Date();
     const run: ApiRun = req.body;
@@ -317,7 +331,7 @@ export default (app: express.Application) => {
       run,
     });
     setTimeout(() => {
-      res.send(fixedData.jobs[fixedData.jobs.length - 1]);
+      res.send(fixedData.runs[fixedData.runs.length - 1]);
     }, 1000);
   });
 
@@ -410,7 +424,7 @@ export default (app: express.Application) => {
   app.get(v1beta1Prefix + '/pipelines', (req, res) => {
     res.header('Content-Type', 'application/json');
     const response: ApiListPipelinesResponse = {
-      next_page_token: '',
+      next_page_token: undefined,
       pipelines: [],
     };
 
